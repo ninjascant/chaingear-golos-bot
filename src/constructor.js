@@ -16,11 +16,11 @@ const construct_json = () => {
   github.authenticate({
     type: "basic",
     username: "ninjascant",
-    password: '258356;a'
+    password: config.key
   })
   const github1 = new Github({
     username: "ninjascant",
-    password: '258356;a', //config.git_key,
+    password: config.key, 
     auth: "basic"
   })
   const repo = github1.getRepo('ninjascant', 'chaingear')
