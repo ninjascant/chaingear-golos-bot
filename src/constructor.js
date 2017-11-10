@@ -7,6 +7,8 @@ const glob = require('glob')
 const fs = require('fs')
 const jsonfile = require('jsonfile')
 const toml = require('toml')
+const _ = require('lodash')
+const config = require('../config.json')
 
 const construct_json = () => {
   const github = new GitHubApi({
@@ -26,6 +28,7 @@ const construct_json = () => {
   const repo = github1.getRepo('ninjascant', 'chaingear')
   const cfrepo = github1.getRepo('cyberfund', 'chaingear')
   const br = 'confideal'
+
   const getRef = (owner, repo, ref) => {
     return new Promise((resolve, reject) => {
       github.gitdata.getReference({owner: 'ninjascant', repo: 'chaingear', ref: `heads/${br}`}, 
@@ -51,7 +54,7 @@ const construct_json = () => {
             repo: repo,
             path: path,
             message: message,
-            content: base64.encode(utf8.encode(content)),
+            content: base64.encode(utf8.encode(content)), //
             sha: sha,
             branch: branch
         }, (err, res) => err?reject(err):resolve(res))
@@ -67,7 +70,8 @@ const construct_json = () => {
       repository.read(branch, filePath, (err, res) => err?reject(err):resolve({res: res, path: filePath}))
     })
   }
-
+  let newFiles = []
+  let cgSha = ''
   getContent(cfrepo, 'gh-pages', 'sources')
     .then(content => {
       const available = glob.sync('*', {cwd: '../sources'}).map(dir => `sources/${dir}`)
@@ -78,6 +82,7 @@ const construct_json = () => {
     .then(results => {
       console.log('Files list collected')
       const filePaths = results.map(res => res[0].path)
+      console.log(filePaths)
       const promiseList = filePaths.map(path => readFile(cfrepo, 'gh-pages', path))
       return Promise.all(promiseList)
     })
@@ -88,9 +93,28 @@ const construct_json = () => {
       })
       return files 
     })
-    .then(files => {
-      const res = act()
-      return jsonfile.writeFileSync('chaingear.json', res, {spaces: 4})
+    .then(none => {
+      return getRef('cyberfund', 'chaingear', 'gh-pages')
+    })
+    .then(res => {
+      const sha = res.data.object.sha
+      return getTree('cyberfund', 'chaingear', sha)
+    })
+    .then(res => {
+      const sha = res.data.tree.filter(item => item.path==='chaingear.json')[0].sha
+      return getBlob('cyberfund', 'chaingear', sha)
+    })
+    .then(data => {
+      const chaingear = JSON.parse(utf8.decode(base64.decode(data.data.content)))
+      cgSha = data.meta.sha
+      const n = chaingear.length
+      const fiat = chaingear.slice(n-15)
+      let crypto = chaingear.slice(0, n-15)
+      const add = newFiles.map(file => toml.parse(file))
+      crypto = crypto.concat(add)
+      crypto = _.sortBy(crypto, ['system'])
+      const newFile = crypto.concat(fiat)
+      return jsonfile.writeFileSync('chaingear.json', newFile)
     })
     .then(none => {
       return getRef('ninjascant', 'chaingear', br)
@@ -108,7 +132,7 @@ const construct_json = () => {
       const fileStr = JSON.stringify(jsonfile.readFileSync('chaingear.json', 'utf-8'), null, 4)
       return updateFile('ninjascant', 'chaingear', 'chaingear.json', 'Commit from constructor.js', fileStr, sha, br)
     })
-    .then(none => console.log(`File chaingear.json constructed`))
+    .then(none => console.log(`File chaingear.json constructed and commited`))
     .catch(error => console.log(error))
   }
 
