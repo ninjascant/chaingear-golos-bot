@@ -13,7 +13,7 @@ const github = new Github({
   auth: "basic"
 })
 const username = "ninjascant",
-    password = "djpvj;yjcnm1;a"
+    password = "config.git_key"
 
 const options = {
   headers: {
