@@ -2,7 +2,7 @@ const http = require('http')
 const golos = require('golos-js')
 const createHandler = require('github-webhook-handler')
 const Github = require('github-api-node')
-const config = require('../config.json')
+const config = require('./config.json')
 const jsonfile = require('jsonfile')
 const _ = require('lodash')
 const prms = require('./promisified.js')
@@ -15,7 +15,7 @@ const github = new Github({
   auth: "basic"
 })
 const username = "ninjascant",
-    password = config.git_key
+    password = config.git_key1
 
 const options = {
   headers: {
@@ -45,8 +45,8 @@ handler.on('push', event => {
   const commits = event.payload.commits.filter(commit => commit.added.length!==0 || commit.modified.length !== 0)
   
   if(commits.length === 0) return
-  const blobGetUrl = 'https://api.github.com/repos/ninjascant/golos-academy/git/blobs/'
-  const url = 'https://api.github.com/repos/ninjascant/golos-academy/commits/'
+  const blobGetUrl = 'https://api.github.com/repos/cyberfund/chaingear/git/blobs/'
+  const url = 'https://api.github.com/repos/cyberfund/chaingear/commits/'
   const promiseList = commits.map(commit => prms.apiReq((url + commit.id), options))
   Promise.all(promiseList)
     .then(commits => {
@@ -58,7 +58,7 @@ handler.on('push', event => {
             .then(list => {
               const projects = list.map(item => item.project)
               return golos.broadcast.vote(config.wif,
-                'cyberanalytics',
+                'golos-chaingear',
                 projects[n].author,
                 projects[n].url.split('/')[2],
                 100,

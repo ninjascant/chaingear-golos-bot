@@ -1,7 +1,8 @@
 const request = require('request')
 const GitHubApi = require("github")
-const config = require('../config.json')
+const config = require('./config.json')
 const base64 = require('base-64')
+const btoa = require('btoa')
 const utf8 = require('utf8')
 
 const github = new GitHubApi({

@@ -75,11 +75,11 @@ const main = () => {
 						return createPullRequest(baseRepo, pull)
 					})
 					.then(res => {
-						console.log(res)
+						//console.log(res)
 					    return golos.broadcast.comment(config.wif, 
 					    		posts[0].author, 
 								posts[0].permlink, 
-								'cyberanalytics', 
+								'golos-chaingear', 
 								`re-cyberanalytics-${posts[0].permlink}-${Math.floor(Math.random() * (1000000 - 1) + 1)}`, 
 								'', 
 								'Thank you for submitting your application for listing on cyber•Fund ICO Radar.', 
@@ -99,7 +99,7 @@ const main = () => {
 							timestamp: new Date().toISOString()
 						}
 						list.push(tmp)
-						return writeOrUpdate(dataRepo, 'master', 'bot-list', 'bot-list.json', JSON.stringify(list))
+						return writeOrUpdate(dataRepo, 'master', 'bot-list', 'bot-list.json', JSON.stringify(list, null, 4))
 					})
 					.then(res=>{
 						console.log(res)
@@ -116,5 +116,6 @@ const main = () => {
 golos.api.getDiscussionsByCreated({"select_tags":['ico-data'], "limit":10}, (err, res)=>err?console.log(err):res)
     .then(posts=>{
     	lastPost.id = posts[0].id
+    	console.log('Listen for new posts')
     	setInterval(main, 1000)
     })
