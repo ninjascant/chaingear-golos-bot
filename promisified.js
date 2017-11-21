@@ -12,7 +12,7 @@ const github = new GitHubApi({
 github.authenticate({
   type: "basic",
   username: "ninjascant",
-  password: config.git_key
+  password: config.git_key1
 })
 
 const readFile = (repository) => {
@@ -32,22 +32,22 @@ const apiPostReq = (url) => {
       (err, response, body) => err?reject(err):resolve(JSON.parse(body)))
   })
 }
-const br = 'confideal'
+//const br = 'confideal'
   const getRef = (owner, repo, ref) => {
     return new Promise((resolve, reject) => {
-      github.gitdata.getReference({owner: 'ninjascant', repo: 'chaingear', ref: `heads/${br}`}, 
+      github.gitdata.getReference({owner: owner, repo: repo, ref: `heads/${ref}`}, 
         (err, res) => err?reject(err):resolve(res))
     })
   }
   const getTree = (owner, repo, sha) => {
     return new Promise((resolve, reject) => {
-      github.gitdata.getTree({owner: 'ninjascant', repo: 'chaingear', sha: sha}, 
+      github.gitdata.getTree({owner: owner, repo: repo, sha: sha}, 
         (err, res) => err?reject(err):resolve(res))
     })
   }
   const getBlob = (owner, repo, sha) => {
     return new Promise((resolve, reject) => {
-      github.gitdata.getBlob({owner: 'ninjascant', repo: 'chaingear', sha: sha}, 
+      github.gitdata.getBlob({owner: owner, repo: repo, sha: sha}, 
         (err, res) => err?reject(err):resolve(res))
     })
   }

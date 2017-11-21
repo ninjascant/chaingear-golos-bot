@@ -68,7 +68,7 @@ const main = () => {
 						console.log(fileRes)
 						const pull = {
 							title: `Add: ${link}`,
-							body: 'Pull request from chainhear-golos-bot',
+							body: 'Pull request from chaingear-golos-bot',
 							base: 'gh-pages',
 							head: `goloschaingear:${link}`
 						}
@@ -76,10 +76,10 @@ const main = () => {
 					})
 					.then(res => {
 						//console.log(res)
-					    return golos.broadcast.comment(config.wif, 
+					    return golos.broadcast.comment(config.wif1, 
 					    		posts[0].author, 
 								posts[0].permlink, 
-								'golos-chaingear', 
+								'ninjas', 
 								`re-cyberanalytics-${posts[0].permlink}-${Math.floor(Math.random() * (1000000 - 1) + 1)}`, 
 								'', 
 								'Thank you for submitting your application for listing on cyber•Fund ICO Radar.', 

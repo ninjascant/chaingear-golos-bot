@@ -27,7 +27,7 @@ const dataRepo = github.getRepo('goloschaingear', 'data')
 
 const port = 8080
 const path = '/'
-const br = 'confideal'
+const br = 'gh-pages'
 const handler = createHandler({path: path, secret: config.secret})
 
 http.createServer((req, res) => {
@@ -38,15 +38,15 @@ http.createServer((req, res) => {
 }).listen(port)
 
 handler.on('error', err => {
-	console.error('Error', err.message)
+	console.error('Handler error', err.message)
 })
 handler.on('push', event => {
   console.log('Push event')
   const commits = event.payload.commits.filter(commit => commit.added.length!==0 || commit.modified.length !== 0)
   
   if(commits.length === 0) return
-  const blobGetUrl = 'https://api.github.com/repos/cyberfund/chaingear/git/blobs/'
-  const url = 'https://api.github.com/repos/cyberfund/chaingear/commits/'
+  const blobGetUrl = 'https://api.github.com/repos/cyberFund/chaingear/git/blobs/'
+  const url = 'https://api.github.com/repos/cyberFund/chaingear/commits/'
   const promiseList = commits.map(commit => prms.apiReq((url + commit.id), options))
   Promise.all(promiseList)
     .then(commits => {
@@ -76,32 +76,33 @@ handler.on('push', event => {
     })
   .then(blobs => {
     const files = blobs.map(blob => toml.parse(atob(blob.content)))
-    //console.log(files)
     const updated = files.map(file => file.system)
     const chaingear = jsonfile.readFileSync('chaingear.json').filter(proj => updated.indexOf(proj.system)===-1)
+
     const n = chaingear.length
     const fiat = chaingear.slice(n-15)
     let crypto = chaingear.slice(0, n-15)
     crypto = crypto.concat(files)
     crypto = _.sortBy(crypto, ['system'])
+    
     const newFile = crypto.concat(fiat)
     return jsonfile.writeFileSync('chaingear.json', newFile, {spaces: 4})
   })
   .then(none => {
-      return prms.getRef('ninjascant', 'chaingear', br)
+      return prms.getRef('cyberFund', 'chaingear', br)
     })
     .then(res => {
       const sha = res.data.object.sha
-      return prms.getTree('ninjascant', 'chaingear', sha)
+      return prms.getTree('cyberFund', 'chaingear', sha)
     })
     .then(res => {
       const sha = res.data.tree.filter(item => item.path==='chaingear.json')[0].sha
-      return prms.getBlob('ninjascant', 'chaingear', sha)
+      return prms.getBlob('cyberFund', 'chaingear', sha)
     })
     .then(res => {
       const sha = res.data.sha
       const fileStr = JSON.stringify(jsonfile.readFileSync('chaingear.json', 'utf-8'), null, 4)
-      return prms.updateFile('ninjascant', 'chaingear', 'chaingear.json', 'Commit from constructor.js', fileStr, sha, br)
+      return prms.updateFile('cyberFund', 'chaingear', 'chaingear.json', 'Commit from constructor.js', fileStr, sha, br)
     })
     .then(none => console.log(`File chaingear.json constructed and commited`))
   .catch(error=>console.log(error))
