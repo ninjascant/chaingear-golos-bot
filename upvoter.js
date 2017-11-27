@@ -8,6 +8,7 @@ const _ = require('lodash')
 const prms = require('./promisified.js')
 const atob = require('atob')
 const toml = require('toml')
+const convert = require('./new_to_old.js')
 
 const github = new Github({
   username: "goloschaingear",
@@ -43,8 +44,12 @@ handler.on('error', err => {
 handler.on('push', event => {
   console.log('Push event')
   const commits = event.payload.commits.filter(commit => commit.added.length!==0 || commit.modified.length !== 0)
-  
+  console.log(commits[0].modified)
   if(commits.length === 0) return
+  if(commits[0].modified.indexOf('chaingear.json')!==-1) {
+    console.log('That was chaingear.json')
+    return
+  }
   const blobGetUrl = 'https://api.github.com/repos/cyberFund/chaingear/git/blobs/'
   const url = 'https://api.github.com/repos/cyberFund/chaingear/commits/'
   const promiseList = commits.map(commit => prms.apiReq((url + commit.id), options))
@@ -75,7 +80,14 @@ handler.on('push', event => {
       return Promise.all(promiseList)
     })
   .then(blobs => {
-    const files = blobs.map(blob => toml.parse(atob(blob.content)))
+    const files = blobs.map(blob => {
+      let file = toml.parse(atob(blob.content))
+      if(file.ico!==undefined) {
+        console.log(file)
+        return convert(file)
+      }
+      else return file
+    })
     const updated = files.map(file => file.system)
     const chaingear = jsonfile.readFileSync('chaingear.json').filter(proj => updated.indexOf(proj.system)===-1)
 
